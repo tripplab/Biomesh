@@ -12,5 +12,6 @@ clean:
 	rm -f ./rotator
 	rm -f ./main.o
 run:
-	./rotator ../MESHER/2_T3_1CWP.geometry.dat ../MESHER/2_T3_1CWP.geometry.dat
+	./rotator ./2_T3_1CWP.geometry.dat ./2_T3_1CWP.geometry.dat
+	#./rotator ../MESHER/2_T3_1CWP.geometry.dat ../MESHER/2_T3_1CWP.geometry.dat
 

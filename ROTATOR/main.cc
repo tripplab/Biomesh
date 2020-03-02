@@ -167,7 +167,38 @@ void RotateNodes( size_t n_nodes , double** nodes ){
  *											elementos que tiene la malla
  */
 void ReadNNodesAndNElements(  char* name , size_t* n_nodes , size_t* n_elements  ){
-	ifstream file;
+
+	FILE* ptr = NULL;
+
+	ptr = fopen( name , "r" );
+	if(  !ptr  ){
+		std::cout << "File could not be opened---PROGRAM FINISHED" << name << std::endl;
+		assert( 0 );
+	}
+	int nodos, elementos;
+	char buffer[ 1000 ];
+	for(  size_t i_trash = 0  ;  i_trash < 8  ;  i_trash++  ){
+		fscanf( ptr , "%s" , buffer );
+	}	
+	nodos = atoi( buffer );
+	(*n_nodes) = nodos;
+	for(  size_t i_trash = 0  ;  i_trash < 7  ;  i_trash++  ){
+		fscanf( ptr , "%s" , buffer );
+	}
+	for(  size_t i_trash = 0  ;  i_trash < (*n_nodes)  ;  i_trash++  ){
+		for(  size_t j_trash = 0  ;  j_trash < 3  ;  j_trash++  ){
+			fscanf( ptr , "%s" , buffer );
+		}
+	}
+	for(  size_t i_trash = 0  ;  i_trash < 15  ;  i_trash++  ){
+		fscanf( ptr , "%s" , buffer );
+	}
+	elementos = atoi( buffer );
+	(*n_elements) = elementos;
+
+	fclose( ptr );
+
+	/*ifstream file;
 	file.open( name );
 	if(  !file.is_open()  ){
 		std::cout << "File could not be opened---PROGRAM FINISHED" << name << std::endl;
@@ -192,7 +223,7 @@ void ReadNNodesAndNElements(  char* name , size_t* n_nodes , size_t* n_elements 
 
 	(*n_elements) = stoi( word );
 
-	file.close();
+	file.close();*/
 }
 
 /**
@@ -206,7 +237,53 @@ void ReadNNodesAndNElements(  char* name , size_t* n_nodes , size_t* n_elements 
  */
 void ReadNodesAndElements( char* name , size_t n_nodes , size_t n_elements , 
 													 double** nodes , size_t** elements , int* material ){
-	ifstream file;
+	FILE* ptr = NULL;	
+	ptr = fopen( name , "r" ); 
+	if(  !ptr  ){
+		std::cout << "File could not be opened---PROGRAM FINISHED" << name << std::endl;
+		assert( 0 );
+	}
+	char buffer[1000];
+	for(  size_t i_trash = 0  ;  i_trash < 15  ;  i_trash++  ){
+		fscanf(ptr,"%s",buffer);	
+	}
+
+	for(  size_t i_node = 0  ;  i_node < n_nodes  ;  i_node++  ){
+		double coord[ 3 ];
+		for(  size_t i_pos = 0  ;  i_pos < 3  ;  i_pos++){
+			fscanf(ptr,"%s",buffer);
+			coord[ i_pos ] = atof( buffer );
+		}	
+		nodes[ i_node ][ 0 ] = coord[ 0 ];
+		nodes[ i_node ][ 1 ] = coord[ 1 ];
+		nodes[ i_node ][ 2 ] = coord[ 2 ];
+	}
+
+	for(  size_t i_trash = 0  ;  i_trash < 23  ;  i_trash++  ){
+		fscanf(ptr,"%s",buffer);	
+	}
+	
+	for(  size_t i_elem = 0  ;  i_elem < n_elements  ;  i_elem++  ){
+		size_t elem[ 8 ];
+		fscanf(ptr,"%s",buffer);	
+		material[ i_elem ] = atoi( buffer );
+		for(  size_t i_pos = 0  ;  i_pos < 8  ;  i_pos++){
+			fscanf(ptr,"%s",buffer);	
+			elem[ i_pos ] = atoi( buffer );
+		}	
+		elements[ i_elem ][ 0 ] = elem[ 0 ];
+		elements[ i_elem ][ 1 ] = elem[ 1 ];
+		elements[ i_elem ][ 2 ] = elem[ 2 ];
+		elements[ i_elem ][ 3 ] = elem[ 3 ];
+		elements[ i_elem ][ 4 ] = elem[ 4 ];
+		elements[ i_elem ][ 5 ] = elem[ 5 ];
+		elements[ i_elem ][ 6 ] = elem[ 6 ];
+		elements[ i_elem ][ 7 ] = elem[ 7 ];
+	}
+
+	fclose( ptr );
+
+	/*ifstream file;
 	file.open( name );
 	if(  !file.is_open()  ){
 		std::cout << "File could not be opened---PROGRAM FINISHED" << name << std::endl;
@@ -250,7 +327,7 @@ void ReadNodesAndElements( char* name , size_t n_nodes , size_t n_elements ,
 		elements[ i_elem ][ 7 ] = elem[ 7 ];
 	}
 
-	file.close();
+	file.close();*/
 }
 
 /**
