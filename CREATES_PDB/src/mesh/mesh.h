@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <string.h>
+#include <cstdio>
 
 //Project includes 
 #include "../boundary/boundary.h"

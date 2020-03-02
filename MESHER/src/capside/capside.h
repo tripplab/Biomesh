@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <cstdio>
 
 //Other includes
 #include "../file/file.h"

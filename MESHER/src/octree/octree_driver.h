@@ -3,7 +3,7 @@
 //C system files
 #include <math.h>
 #include <assert.h>
-
+#include <cstdio>
 //C++ system files
 #include <vector>
 #include <algorithm>

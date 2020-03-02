@@ -7,6 +7,7 @@
 //C++ system files
 #include <vector>
 #include <algorithm>
+#include <cstdio>
 
 //Other libraries
 #include "octree_binary.h"

@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream> 
 #include <assert.h>
+#include <cstdio>
 
 #define KRATOS_INDEPENDENT
 

@@ -10,7 +10,7 @@
 #include <vector>
 #include <iostream>
 #include <bitset>
-
+#include <cstdio>
 
 //Other libraries
 #include "../octree/octree_driver.h"

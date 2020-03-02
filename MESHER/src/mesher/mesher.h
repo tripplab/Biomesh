@@ -7,6 +7,7 @@
 //C++ system files
 #include <vector>
 #include <iostream>
+#include <cstdio>
 
 //Other libraries
 #include "../octree/octree_driver.h"

@@ -7,6 +7,7 @@
 //C++ system files
 #include <vector>
 #include <iostream>
+#include <cstdio>
 
 //Other libraries
 using namespace std;
