@@ -3,7 +3,28 @@ CFLAGS=-std=c++11 -Wall -fopenmp
 LFLAGS=-fopenmp -lm
 EJECUTABLE=./output/mesher
 
-all: $(EJECUTABLE)
+all: folders $(EJECUTABLE)
+folders: ./input ./obj ./obj/boundary ./obj/capside ./obj/file ./obj/geometry ./obj/mesh ./obj/mesher ./obj/octree ./output
+./input:
+	mkdir ./input
+./obj:
+	mkdir ./obj
+./obj/boundary:
+	mkdir ./obj/boundary
+./obj/capside:
+	mkdir ./obj/capside
+./obj/file:
+	mkdir ./obj/file
+./obj/geometry:
+	mkdir ./obj/geometry
+./obj/mesh:
+	mkdir ./obj/mesh
+./obj/mesher:
+	mkdir ./obj/mesher
+./obj/octree:
+	mkdir ./obj/octree
+./output:
+	mkdir ./output
 $(EJECUTABLE): ./obj/file/file.o ./obj/geometry/geometry.o ./obj/boundary/boundary.o ./obj/mesh/mesh.o ./obj/capside/capside.o ./obj/octree/octree_driver.o ./obj/mesher/mesher.o ./obj/main.o
 	$(CCOMP) $(LFLAGS) ./obj/file/file.o ./obj/geometry/geometry.o ./obj/boundary/boundary.o ./obj/mesh/mesh.o ./obj/capside/capside.o ./obj/octree/octree_driver.o ./obj/mesher/mesher.o ./obj/main.o -o $(EJECUTABLE)
 ./obj/file/file.o: ./src/file/file.cc

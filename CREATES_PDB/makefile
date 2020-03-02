@@ -3,7 +3,30 @@ CFLAGS=-std=c++11 -fopenmp -Wall
 LFLAGS=-fopenmp -lm
 EJECUTABLE=./output/ejecutable
 
-all: $(EJECUTABLE)
+all: folders $(EJECUTABLE)
+folders: ./input ./obj ./obj/boundary ./obj/capside ./obj/file ./obj/geometry ./obj/interpolator ./obj/mesh ./obj/octree ./obj/results ./output
+./input:
+	mkdir ./input
+./obj:
+	mkdir ./obj
+./obj/boundary:
+	mkdir ./obj/boundary
+./obj/capside:
+	mkdir ./obj/capside
+./obj/file:
+	mkdir ./obj/file
+./obj/geometry:
+	mkdir ./obj/geometry
+./obj/interpolator:
+	mkdir ./obj/interpolator
+./obj/mesh:
+	mkdir ./obj/mesh
+./obj/octree:
+	mkdir ./obj/octree
+./obj/results:
+	mkdir ./obj/results
+./output:
+	mkdir ./output
 $(EJECUTABLE): ./obj/results/results.o ./obj/file/file.o ./obj/geometry/geometry.o ./obj/boundary/boundary.o ./obj/mesh/mesh.o ./obj/capside/capside.o ./obj/octree/octree_driver.o ./obj/interpolator/interpolator.o ./obj/main.o
 	$(CCOMP) $(LFLAGS) ./obj/results/results.o ./obj/file/file.o ./obj/geometry/geometry.o ./obj/boundary/boundary.o ./obj/mesh/mesh.o ./obj/capside/capside.o ./obj/octree/octree_driver.o ./obj/interpolator/interpolator.o ./obj/main.o -o $(EJECUTABLE)
 ./obj/results/results.o: ./src/results/results.cc
