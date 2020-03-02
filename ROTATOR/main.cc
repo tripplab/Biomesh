@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <string>
 
 using namespace std;
 
@@ -176,7 +177,7 @@ void ReadNNodesAndNElements(  char* name , size_t* n_nodes , size_t* n_elements 
 	for(  size_t i_trash = 0  ;  i_trash < 8  ;  i_trash++  ){
 		file >> word;	
 	}
-	(*n_nodes) = std::stoi( word );
+	(*n_nodes) = stoi( word );
 	for(  size_t i_trash = 0  ;  i_trash < 7  ;  i_trash++  ){
 		file >> word;	
 	}
@@ -189,7 +190,7 @@ void ReadNNodesAndNElements(  char* name , size_t* n_nodes , size_t* n_elements 
 		file >> word;	
 	}
 
-	(*n_elements) = std::stoi( word );
+	(*n_elements) = stoi( word );
 
 	file.close();
 }
@@ -220,7 +221,7 @@ void ReadNodesAndElements( char* name , size_t n_nodes , size_t n_elements ,
 		double coord[ 3 ];
 		for(  size_t i_pos = 0  ;  i_pos < 3  ;  i_pos++){
 			file >> word;
-			coord[ i_pos ] = std::stod( word );
+			coord[ i_pos ] = stod( word );
 		}	
 		nodes[ i_node ][ 0 ] = coord[ 0 ];
 		nodes[ i_node ][ 1 ] = coord[ 1 ];
@@ -234,10 +235,10 @@ void ReadNodesAndElements( char* name , size_t n_nodes , size_t n_elements ,
 	for(  size_t i_elem = 0  ;  i_elem < n_elements  ;  i_elem++  ){
 		size_t elem[ 8 ];
 		file >> word;
-		material[ i_elem ] = std::stoi( word );
+		material[ i_elem ] = stoi( word );
 		for(  size_t i_pos = 0  ;  i_pos < 8  ;  i_pos++){
 			file >> word;
-			elem[ i_pos ] = std::stoi( word );
+			elem[ i_pos ] = stoi( word );
 		}	
 		elements[ i_elem ][ 0 ] = elem[ 0 ];
 		elements[ i_elem ][ 1 ] = elem[ 1 ];
