@@ -6,6 +6,7 @@
 //C++ system files
 #include <vector>
 #include <iostream>
+#include <cstdio>
 
 /**
  *This program takes a vdb file and proccess its information in order to eliminate the 
