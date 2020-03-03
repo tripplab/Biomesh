@@ -89,7 +89,7 @@ class Aminoacid{
 
 	int kind_;
 	std::vector<Atom*> atoms_;
-	char valids_[ 20 ][4] = {  {"ALA"}/*Alanine*/ ,       {"ARG"}/*Arginine*/ ,      {"ASN"}/*Asparagine*/ , 
+	char* valids_[ 20 ] = {  {"ALA"}/*Alanine*/ ,       {"ARG"}/*Arginine*/ ,      {"ASN"}/*Asparagine*/ , 
 															 {"ASP"}/*Aspartic acid*/ , {"CYS"}/*Cysteine*/ ,      {"GLU"}/*Glutamic acid*/ , 
 															 {"GLN"}/*Glutamine*/ ,     {"GLY"}/*Glycine*/ ,       {"HIS"}/*Histidine*/ , 
 															 {"ILE"}/*Isoleucine*/ ,    {"LEU"}/*Leucine*/ ,       {"LYS"}/*Lysine*/ , 
@@ -141,7 +141,7 @@ class Protein{
 
 	char kind_;
 	std::vector<Aminoacid*> aminoacids_;
-	char valids_[ 20 ][4] = {  {"ALA"}/*Alanine*/ ,       {"ARG"}/*Arginine*/ ,      {"ASN"}/*Asparagine*/ , 
+	char* valids_[ 20 ] = {  {"ALA"}/*Alanine*/ ,       {"ARG"}/*Arginine*/ ,      {"ASN"}/*Asparagine*/ , 
 															 {"ASP"}/*Aspartic acid*/ , {"CYS"}/*Cysteine*/ ,      {"GLU"}/*Glutamic acid*/ , 
 															 {"GLN"}/*Glutamine*/ ,     {"GLY"}/*Glycine*/ ,       {"HIS"}/*Histidine*/ , 
 															 {"ILE"}/*Isoleucine*/ ,    {"LEU"}/*Leucine*/ ,       {"LYS"}/*Lysine*/ , 
@@ -224,7 +224,7 @@ class Vdb : public File{
 	std::vector<Protein*> proteins_;
 	int virus_type_;
 	int solution_type_;
-	char valids_[ 20 ][4] = {  {"ALA"}/*Alanine*/ ,       {"ARG"}/*Arginine*/ ,      {"ASN"}/*Asparagine*/ , 
+	char* valids_[ 20 ] = {  {"ALA"}/*Alanine*/ ,       {"ARG"}/*Arginine*/ ,      {"ASN"}/*Asparagine*/ , 
 															 {"ASP"}/*Aspartic acid*/ , {"CYS"}/*Cysteine*/ ,      {"GLU"}/*Glutamic acid*/ , 
 															 {"GLN"}/*Glutamine*/ ,     {"GLY"}/*Glycine*/ ,       {"HIS"}/*Histidine*/ , 
 															 {"ILE"}/*Isoleucine*/ ,    {"LEU"}/*Leucine*/ ,       {"LYS"}/*Lysine*/ , 
