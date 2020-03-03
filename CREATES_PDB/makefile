@@ -1,7 +1,7 @@
 CCOMP=g++
 CFLAGS=-std=c++11 -fopenmp -Wall
 LFLAGS=-fopenmp -lm
-EJECUTABLE=./output/ejecutable
+EJECUTABLE=./output/pdb
 
 all: folders $(EJECUTABLE)
 folders: ./input ./obj ./obj/boundary ./obj/capside ./obj/file ./obj/geometry ./obj/interpolator ./obj/mesh ./obj/octree ./obj/results ./output
@@ -53,7 +53,7 @@ clean:
 	rm -f ./*.pdb
 	rm -f ./*.msh
 	rm -f ./*.res
-	rm -f ./output/ejecutable
+	rm -f ./output/pdb
 	rm -f ./obj/main.o
 	rm -f ./obj/results/results.o
 	rm -f ./obj/file/file.o
@@ -64,4 +64,4 @@ clean:
 	rm -f ./obj/interpolator/interpolator.o
 	rm -f ./obj/capside/capside.o
 run:
-	./output/ejecutable ./input/T3_1cwp_full.vdb ./2_T3_1CWP.post.msh ./2_T3_1CWP.post.res ./2_T3_1CWP.pdb 5
+	./output/pdb ./input/T3_1cwp_full.vdb ./2_T3_1CWP.post.msh ./2_T3_1CWP.post.res ./2_T3_1CWP.pdb 5

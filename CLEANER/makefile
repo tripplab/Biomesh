@@ -1,7 +1,7 @@
 CCOMP=g++
 CFLAGS=-std=c++11 -Wall
 LFLAGS=-lm
-EJECUTABLE=./ejecutable
+EJECUTABLE=./cleaner
 
 all: $(EJECUTABLE)
 $(EJECUTABLE): ./main.o
@@ -9,7 +9,7 @@ $(EJECUTABLE): ./main.o
 ./obj/main.o: ./main.cc
 	$(CCOMP) $(CFLAGS) -c ./main.cc -o ./main.o
 clean:
-	rm -f ./ejecutable
+	rm -f ./cleaner
 	rm -f ./main.o
 run:
-	./ejecutable  ./input/1cwp_full.vdb T3_1cwp_full.vdb
+	./cleaner  ./input/1cwp_full.vdb T3_1cwp_full.vdb
