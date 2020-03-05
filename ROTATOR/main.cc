@@ -364,7 +364,30 @@ void SaveRotatedMesh( char* name , size_t n_nodes , size_t n_elements , double**
 	fclose( fp );
 }
 
+/**
+ *Checking if number of arguments is correct or not
+ *@param[in] argc Number of arguments in program
+ */
+void CheckParameters( int argc ){
+	if(  argc != 3  ){
+		std::cout << "\n\n";
+		std::cout << "**************************************************************************************" << std::endl;
+		std::cout << "********************************MESH ROTATE APPLICATION*******************************" << std::endl;
+		std::cout << "Received wrong number of arguments " << std::endl; 
+		std::cout << "Arguments must be: " << std::endl;
+		std::cout << "  --[1][string][input ] Name of file containing geometry informaiton in FEM format" << std::endl;
+		std::cout << "  --[2][string][output] Name of file containing geometry informaiton in FEM format" << std::endl;
+		std::cout << "********************************MESH ROTATE APPLICATION*******************************" << std::endl;
+		std::cout << "**************************************************************************************" << std::endl;
+		std::cout << "\n\n";
+		assert( 0 );
+	}
+}
+
 int main( int argc , char** argv ){
+
+	CheckParameters( argc );
+
 	size_t n_nodes , n_elements;
 	double **nodes;
 	size_t **elements;

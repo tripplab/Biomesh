@@ -58,8 +58,8 @@ void CheckParameters( int argc ){
 		std::cout << "*********************************CLEAN PDB APPLICATION********************************" << std::endl;
 		std::cout << "Received wrong number of arguments " << std::endl; 
 		std::cout << "Arguments must be: " << std::endl;
-		std::cout << "  --[1] Name of vdb file containing the atoms information" << std::endl;
-		std::cout << "  --[2] Name of vdb file to save the relevant information for meshing the biomeloceule" << std::endl;
+		std::cout << "  --[1][string][input ] Name of vdb file containing the atoms information" << std::endl;
+		std::cout << "  --[2][string][output] Name of vdb file to save the relevant information for meshing the biomeloceule" << std::endl;
 		std::cout << "*********************************CLEAN PDB APPLICATION********************************" << std::endl;
 		std::cout << "**************************************************************************************" << std::endl;
 		std::cout << "\n\n";

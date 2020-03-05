@@ -46,11 +46,11 @@ void CheckParameters( int argc ){
 		std::cout << "********************************MESH TO PDB APPLICATION*******************************" << std::endl;
 		std::cout << "Received wrong number of arguments " << std::endl; 
 		std::cout << "Arguments must be: " << std::endl;
-		std::cout << "  --[1] Name of vdb file containing the atoms information" << std::endl;
-		std::cout << "  --[2] Name of file containing the mesh information in GiD format" << std::endl;
-		std::cout << "  --[3] Name of file containing the results information in GiD format" << std::endl;
-		std::cout << "  --[4] Name of pdb file to save the results interpolated to the atoms" << std::endl;
-		std::cout << "  --[5] Refinement level to use in the octree, it is used for search interpolations" << std::endl;
+		std::cout << "  --[1][string][input ] Name of vdb file containing the atoms information" << std::endl;
+		std::cout << "  --[2][string][input ] Name of file containing the mesh information in GiD format" << std::endl;
+		std::cout << "  --[3][string][input ] Name of file containing the results information in GiD format" << std::endl;
+		std::cout << "  --[4][string][output] Name of pdb file to save the results interpolated to the atoms" << std::endl;
+		std::cout << "  --[5][int   ][input ] Refinement level to use in the octree, it is used for search interpolations" << std::endl;
 		std::cout << "********************************MESH TO PDB APPLICATION*******************************" << std::endl;
 		std::cout << "**************************************************************************************" << std::endl;
 		std::cout << "\n\n";
