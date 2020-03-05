@@ -13,7 +13,11 @@
  *     4-Name of the output file with pdb extension
  *		 5-Refinement level 
  */
+
+void CheckParameters( int argc );
+
 int main( int argc , char** argv ){
+	CheckParameters( argc );
 	std::cout << " 0/100 READING DATA " << std::endl;
 	Interpolator* com = new Interpolator( argc , argv );
 	std::cout << " 17/100 TRANSLATING RESULTS TO NODES " << std::endl;
@@ -30,3 +34,27 @@ int main( int argc , char** argv ){
 	delete com;
   return 0;
 }
+
+/**
+ *Checking if number of arguments is correct or not
+ *@param[in] argc Number of arguments in program
+ */
+void CheckParameters( int argc ){
+	if(  argc != 6  ){
+		std::cout << "\n\n";
+		std::cout << "**************************************************************************************" << std::endl;
+		std::cout << "********************************MESH TO PDB APPLICATION*******************************" << std::endl;
+		std::cout << "Received wrong number of arguments " << std::endl; 
+		std::cout << "Arguments must be: " << std::endl;
+		std::cout << "  --[1] Name of vdb file containing the atoms information" << std::endl;
+		std::cout << "  --[2] Name of file containing the mesh information in GiD format" << std::endl;
+		std::cout << "  --[3] Name of file containing the results information in GiD format" << std::endl;
+		std::cout << "  --[4] Name of pdb file to save the results interpolated to the atoms" << std::endl;
+		std::cout << "  --[5] Refinement level to use in the octree, it is used for search interpolations" << std::endl;
+		std::cout << "********************************MESH TO PDB APPLICATION*******************************" << std::endl;
+		std::cout << "**************************************************************************************" << std::endl;
+		std::cout << "\n\n";
+		assert( 0 );
+	}
+}
+
