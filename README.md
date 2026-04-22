@@ -16,7 +16,7 @@ A modern C++ toolkit for generating hexahedral finite element meshes from molecu
 - **Bounding Box Calculation** - Compute 3D molecular bounding boxes with padding
 - **Uniform Voxelization** - Tessellate space into regular cubic voxels
 - **Dual Mesh Generation** - Create meshes from both occupied and empty voxels
-- **GiD Export** - Export to industry-standard GiD mesh format (. msh)
+- **Mesh Export (GiD/STL)** - Export volumetric meshes to GiD (.msh) or boundary surface meshes to STL (.stl)
 - **Molecule Filtering** - Filter by protein, nucleic acids, water, ions, etc.
 
 ### Advanced Features
@@ -169,6 +169,7 @@ done
 | `-v, --voxel-size VALUE` | Voxel edge length (Å) | 1.0 |
 | `-p, --padding VALUE` | Bounding box padding (Å) | 2.0 |
 | `-o, --output BASENAME` | Output file basename | mesh |
+| `-f, --format FORMAT` | Output format (`gid` or `stl`) | gid |
 | `--occupied BOOL` | Generate occupied mesh | true |
 | `--empty BOOL` | Generate empty mesh | true |
 | `--filter TYPE` | Molecule filter | none |
@@ -200,6 +201,7 @@ padding = 2.0
 
 [output]
 basename = high_res_mesh
+format = gid
 generate_occupied = true
 generate_empty = true
 
@@ -477,7 +479,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Roadmap
 
-- [ ] VTK export format
+- [x] STL export format (`--format stl`)
 - [ ] Python bindings (pybind11)
 - [ ] Adaptive mesh refinement
 - [ ] Surface mesh extraction

@@ -25,7 +25,7 @@ Options:
   -v, --voxel-size VALUE     Voxel size in Angstroms (default: 1.0)
       --inflate-factor VALUE Radius scale factor for atom vdW radii (default: 1.0)
   -p, --padding VALUE        Bounding box padding in Angstroms (default: 2.0)
-  -f, --format FORMAT        Output format (vtk|gid|json|txt) (default: gid)
+  -f, --format FORMAT        Output format (gid|stl) (default: gid)
       --filter TYPE          Filter type (none|all|protein-only|no-water|custom)
       --occupied BOOL        Generate occupied mesh (true|false) (default: true)
       --empty BOOL           Generate empty mesh (true|false) (default: true)
@@ -122,6 +122,7 @@ padding = 2.0
 # Will generate: <basename>_occupied.msh and <basename>_empty.msh
 basename = mesh
 format = gid
+# Supported formats: gid, stl
 
 # Control which meshes to generate
 generate_occupied = true
@@ -143,7 +144,7 @@ allowed_filter() {
 
 allowed_format() {
     case "$1" in
-    vtk|gid|json|txt) return 0 ;;
+    gid|stl) return 0 ;;
     *) return 1 ;;
     esac
 }
@@ -218,9 +219,7 @@ EOF
 get_file_extension() {
     case "$output_format" in
     gid) echo "msh" ;;
-    vtk) echo "vtk" ;;
-    json) echo "json" ;;
-    txt) echo "txt" ;;
+    stl) echo "stl" ;;
     *) echo "msh" ;;  # Default to msh
     esac
 }
@@ -258,9 +257,9 @@ run_dual_mesh_generation() {
             
             log ""
             log "═══ Generating Occupied Mesh ═══"
-            logv "Running: $OCCUPIED_CMD $input_file $voxel_size $occupied_output $padding $inflate_factor"
+            logv "Running: $OCCUPIED_CMD $input_file $voxel_size $occupied_output $padding $inflate_factor $output_format"
             
-            if "$OCCUPIED_CMD" "$input_file" "$voxel_size" "$occupied_output" "$padding" "$inflate_factor"; then
+            if "$OCCUPIED_CMD" "$input_file" "$voxel_size" "$occupied_output" "$padding" "$inflate_factor" "$output_format"; then
                 log "✓ Occupied mesh generated: $occupied_output"
                 write_summary "occupied" "$input_file" "$occupied_output"
                 generated_files+=("$occupied_output")
@@ -286,9 +285,9 @@ run_dual_mesh_generation() {
             
             log ""
             log "═══ Generating Empty Mesh ═══"
-            logv "Running: $EMPTY_CMD $input_file $voxel_size $empty_output $padding $inflate_factor"
+            logv "Running: $EMPTY_CMD $input_file $voxel_size $empty_output $padding $inflate_factor $output_format"
             
-            if "$EMPTY_CMD" "$input_file" "$voxel_size" "$empty_output" "$padding" "$inflate_factor"; then
+            if "$EMPTY_CMD" "$input_file" "$voxel_size" "$empty_output" "$padding" "$inflate_factor" "$output_format"; then
                 log "✓ Empty mesh generated: $empty_output"
                 write_summary "empty" "$input_file" "$empty_output"
                 generated_files+=("$empty_output")
