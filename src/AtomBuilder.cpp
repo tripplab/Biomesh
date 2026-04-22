@@ -27,7 +27,7 @@ std::unique_ptr<Atom> AtomBuilder::buildAtom(const Atom& basicAtom) const {
     const AtomicSpec& spec = database_.getSpec(element);
     
     // Create new atom with full properties
-    auto enrichedAtom = std::make_unique<Atom>(element, spec.radius, spec.mass);
+    auto enrichedAtom = std::make_unique<Atom>(element, spec.radius * inflateFactor_, spec.mass);
     enrichedAtom->setCoordinates(basicAtom.getX(), basicAtom.getY(), basicAtom.getZ());
     enrichedAtom->setId(basicAtom.getId());
     
