@@ -1,7 +1,0 @@
-mpdallexit
-echo MPD_SECRETWORD=arbitrary > ~/.mpd.conf
-chmod 600 ~/.mpd.conf
-mpdboot -r ssh -n 15 -f $HOME/mpd.hosts
-mpdtrace
-mpiexec -configfile config
-mpdallexit
