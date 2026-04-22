@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <stdexcept>
 
 using namespace biomesh;
 
@@ -183,6 +184,41 @@ TEST_F(AtomBuilderTest, CorrectPropertyAssignment) {
     EXPECT_EQ(1.55, enrichedNitrogen->getAtomicRadius());  // Van der Waals radius
     EXPECT_EQ(14.007, enrichedNitrogen->getAtomicMass());
     EXPECT_EQ(2, enrichedNitrogen->getId());
+}
+
+TEST_F(AtomBuilderTest, InflateFactorScalesRadii) {
+    std::vector<std::unique_ptr<Atom>> basicAtoms;
+    auto carbon = std::make_unique<Atom>("C");
+    carbon->setCoordinates(1.0, 2.0, 3.0);
+    carbon->setId(1);
+    basicAtoms.push_back(std::move(carbon));
+
+    AtomBuilder builder(1.5);
+    auto enrichedAtoms = builder.buildAtoms(basicAtoms);
+
+    ASSERT_EQ(1, enrichedAtoms.size());
+    EXPECT_EQ(1.70 * 1.5, enrichedAtoms[0]->getAtomicRadius());
+    EXPECT_EQ(12.011, enrichedAtoms[0]->getAtomicMass());
+}
+
+TEST_F(AtomBuilderTest, ShrinkFactorScalesRadii) {
+    std::vector<std::unique_ptr<Atom>> basicAtoms;
+    auto oxygen = std::make_unique<Atom>("O");
+    oxygen->setCoordinates(0.0, 0.0, 0.0);
+    oxygen->setId(1);
+    basicAtoms.push_back(std::move(oxygen));
+
+    AtomBuilder builder(0.5);
+    auto enrichedAtoms = builder.buildAtoms(basicAtoms);
+
+    ASSERT_EQ(1, enrichedAtoms.size());
+    EXPECT_EQ(1.52 * 0.5, enrichedAtoms[0]->getAtomicRadius());
+    EXPECT_EQ(15.999, enrichedAtoms[0]->getAtomicMass());
+}
+
+TEST_F(AtomBuilderTest, NonPositiveInflateFactorThrows) {
+    EXPECT_THROW(AtomBuilder(0.0), std::invalid_argument);
+    EXPECT_THROW(AtomBuilder(-1.0), std::invalid_argument);
 }
 
 TEST_F(AtomBuilderTest, UnsupportedElementThrows) {
@@ -692,4 +728,3 @@ TEST_F(VoxelMeshGeneratorTest, ParallelConsistency) {
         }
     }
 }
-

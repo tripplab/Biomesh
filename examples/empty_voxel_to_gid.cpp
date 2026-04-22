@@ -10,14 +10,15 @@
 using namespace biomesh;
 
 void printUsage(const char* programName) {
-    std::cout << "\nUsage: " << programName << " <pdb_file> <voxel_size> <output_file> [padding]\n\n";
+    std::cout << "\nUsage: " << programName << " <pdb_file> <voxel_size> <output_file> [padding] [inflate_factor]\n\n";
     std::cout << "Arguments:\n";
     std::cout << "  pdb_file     : Path to input PDB file\n";
     std::cout << "  voxel_size   : Edge length of voxels in Angstroms (e.g., 1.0)\n";
     std::cout << "  output_file  : Output GiD mesh file path (e.g., empty_mesh.msh)\n";
-    std::cout << "  padding      : Optional padding around bounding box in Angstroms (default: 2.0)\n\n";
+    std::cout << "  padding      : Optional padding around bounding box in Angstroms (default: 2.0)\n";
+    std::cout << "  inflate_factor : Optional radius scale factor (default: 1.0)\n\n";
     std::cout << "Example:\n";
-    std::cout << "  " << programName << " protein.pdb 1.0 empty_mesh.msh 2.0\n\n";
+    std::cout << "  " << programName << " protein.pdb 1.0 empty_mesh.msh 2.0 1.0\n\n";
     std::cout << "Note: Empty voxel meshes can be very large (typically 95-99% of total voxels).\n";
     std::cout << "      Use larger voxel sizes for initial testing.\n\n";
 }
@@ -37,6 +38,7 @@ int main(int argc, char* argv[]) {
     double voxelSize = 0.0;
     std::string outputFile = argv[3];
     double padding = 2.0; // Default padding
+    double inflateFactor = 1.0; // Default atom radius scale
     
     // Parse voxel size
     try {
@@ -63,6 +65,20 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
+
+    // Parse optional inflate factor
+    if (argc > 5) {
+        try {
+            inflateFactor = std::stod(argv[5]);
+            if (inflateFactor <= 0.0) {
+                std::cerr << "Error: Inflate factor must be positive\n";
+                return 1;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error: Invalid inflate factor value: " << argv[5] << "\n";
+            return 1;
+        }
+    }
     
     try {
         // Step 1: Parse PDB file
@@ -72,7 +88,7 @@ int main(int argc, char* argv[]) {
         
         // Step 2: Enrich atoms with physical properties
         std::cout << "Enriching atoms with physical properties...\n";
-        AtomBuilder builder;
+        AtomBuilder builder(inflateFactor);
         auto enrichedAtoms = builder.buildAtoms(basicAtoms);
         std::cout << "  Enriched " << enrichedAtoms.size() << " atoms\n\n";
         
@@ -80,6 +96,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Creating voxel grid...\n";
         std::cout << "  Voxel size: " << voxelSize << " Å\n";
         std::cout << "  Padding: " << padding << " Å\n";
+        std::cout << "  Inflate factor: " << inflateFactor << "\n";
         VoxelGrid voxelGrid(enrichedAtoms, voxelSize, padding);
         
         std::cout << "\n";

@@ -23,6 +23,7 @@ Options:
   -o, --output BASENAME      Output file basename (default: mesh)
                              Generates: <basename>_occupied.msh and <basename>_empty.msh
   -v, --voxel-size VALUE     Voxel size in Angstroms (default: 1.0)
+      --inflate-factor VALUE Radius scale factor for atom vdW radii (default: 1.0)
   -p, --padding VALUE        Bounding box padding in Angstroms (default: 2.0)
   -f, --format FORMAT        Output format (vtk|gid|json|txt) (default: gid)
       --filter TYPE          Filter type (none|all|protein-only|no-water|custom)
@@ -113,6 +114,7 @@ keep_ligands = true
 
 [voxelization]
 voxel_size = 1.0
+inflate_factor = 1.0
 padding = 2.0
 
 [output]
@@ -205,6 +207,7 @@ Input file: $input_file
 Output file: $output_file
 Output format: $output_format
 Voxel size: $voxel_size
+Inflate factor: $inflate_factor
 Padding: $padding
 Filter: $filter_type
 Generation timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
@@ -255,9 +258,9 @@ run_dual_mesh_generation() {
             
             log ""
             log "═══ Generating Occupied Mesh ═══"
-            logv "Running: $OCCUPIED_CMD $input_file $voxel_size $occupied_output $padding"
+            logv "Running: $OCCUPIED_CMD $input_file $voxel_size $occupied_output $padding $inflate_factor"
             
-            if "$OCCUPIED_CMD" "$input_file" "$voxel_size" "$occupied_output" "$padding"; then
+            if "$OCCUPIED_CMD" "$input_file" "$voxel_size" "$occupied_output" "$padding" "$inflate_factor"; then
                 log "✓ Occupied mesh generated: $occupied_output"
                 write_summary "occupied" "$input_file" "$occupied_output"
                 generated_files+=("$occupied_output")
@@ -283,9 +286,9 @@ run_dual_mesh_generation() {
             
             log ""
             log "═══ Generating Empty Mesh ═══"
-            logv "Running: $EMPTY_CMD $input_file $voxel_size $empty_output $padding"
+            logv "Running: $EMPTY_CMD $input_file $voxel_size $empty_output $padding $inflate_factor"
             
-            if "$EMPTY_CMD" "$input_file" "$voxel_size" "$empty_output" "$padding"; then
+            if "$EMPTY_CMD" "$input_file" "$voxel_size" "$empty_output" "$padding" "$inflate_factor"; then
                 log "✓ Empty mesh generated: $empty_output"
                 write_summary "empty" "$input_file" "$empty_output"
                 generated_files+=("$empty_output")
@@ -314,6 +317,7 @@ run_dual_mesh_generation() {
 input_file=""
 output_basename=""  # Will be set to "mesh" if still empty after config parsing
 voxel_size="1.0"
+inflate_factor="1.0"
 padding="2.0"
 filter_type="none"
 output_format="gid"
@@ -326,6 +330,7 @@ batch_inputs=()
 cli_input=""
 cli_output=""
 cli_voxel=""
+cli_inflate=""
 cli_padding=""
 cli_filter=""
 cli_format=""
@@ -369,6 +374,13 @@ while [[ $idx -lt ${#args[@]} ]]; do
         ;;
     --voxel-size=*)
         cli_voxel="${arg#*=}"
+        ;;
+    --inflate-factor)
+        require_value "$arg" $((idx + 1)) ${#args[@]}
+        ((idx++)); cli_inflate="${args[$idx]}"
+        ;;
+    --inflate-factor=*)
+        cli_inflate="${arg#*=}"
         ;;
     -p|--padding)
         require_value "$arg" $((idx + 1)) ${#args[@]}
@@ -465,6 +477,7 @@ if [[ -n "$config_file" ]]; then
     set_from_config "input.file" input_file
     set_from_config "filter.type" filter_type
     set_from_config "voxelization.voxel_size" voxel_size
+    set_from_config "voxelization.inflate_factor" inflate_factor
     set_from_config "voxelization.padding" padding
     
     # Support both old (output.file) and new (output.basename) config format
@@ -504,6 +517,7 @@ fi
 [[ ${#cli_batch[@]} -gt 0 ]] && batch_inputs=("${cli_batch[@]}")
 [[ -n "$cli_output" ]] && output_basename="$cli_output"
 [[ -n "$cli_voxel" ]] && voxel_size="$cli_voxel"
+[[ -n "$cli_inflate" ]] && inflate_factor="$cli_inflate"
 [[ -n "$cli_padding" ]] && padding="$cli_padding"
 [[ -n "$cli_filter" ]] && filter_type="$cli_filter"
 [[ -n "$cli_format" ]] && output_format="$cli_format"
@@ -533,7 +547,9 @@ for f in "${all_inputs[@]}"; do
 done
 
 is_number "$voxel_size" || die "Voxel size must be numeric."
+is_number "$inflate_factor" || die "Inflate factor must be numeric."
 is_number "$padding" || die "Padding must be numeric."
+awk -v f="$inflate_factor" 'BEGIN {exit (f > 0) ? 0 : 1}' || die "Inflate factor must be positive."
 allowed_filter "$filter_type" || die "Invalid filter type: $filter_type"
 allowed_format "$output_format" || die "Invalid output format: $output_format"
 
@@ -548,6 +564,7 @@ log "BioMesh Dual Mesh Generation:"
 log "  Inputs             : ${all_inputs[*]}"
 log "  Output basename    : $output_basename"
 log "  Voxel size         : $voxel_size Angstroms"
+log "  Inflate factor     : $inflate_factor"
 log "  Padding            : $padding Angstroms"
 log "  Filter type        : $filter_type"
 log "  Format             : $output_format"

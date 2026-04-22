@@ -4,6 +4,7 @@
 #include "biomesh/AtomicSpec.hpp"
 #include <vector>
 #include <memory>
+#include <stdexcept>
 
 namespace biomesh {
 
@@ -17,9 +18,14 @@ namespace biomesh {
 class AtomBuilder {
 public:
     /**
-     * @brief Default constructor
+     * @brief Constructor
+     * @param inflateFactor Scale factor applied to default van der Waals radii
      */
-    AtomBuilder() = default;
+    explicit AtomBuilder(double inflateFactor = 1.0) : inflateFactor_(inflateFactor) {
+        if (inflateFactor_ <= 0.0) {
+            throw std::invalid_argument("Inflate factor must be positive");
+        }
+    }
 
     /**
      * @brief Build fully initialized atoms from basic atoms
@@ -55,6 +61,7 @@ public:
 
 private:
     AtomicSpecDatabase& database_ = AtomicSpecDatabase::getInstance();
+    double inflateFactor_ = 1.0;
 };
 
 } // namespace biomesh
