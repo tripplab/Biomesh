@@ -1,5 +1,5 @@
 #include "biomesh/EmptyVoxelMeshGenerator.hpp"
-#include "biomesh/GiDExporter.hpp"
+#include "biomesh/MeshExporter.hpp"
 #include "biomesh/VoxelGrid.hpp"
 #include "biomesh/PDBParser.hpp"
 #include "biomesh/AtomBuilder.hpp"
@@ -10,21 +10,22 @@
 using namespace biomesh;
 
 void printUsage(const char* programName) {
-    std::cout << "\nUsage: " << programName << " <pdb_file> <voxel_size> <output_file> [padding] [inflate_factor]\n\n";
+    std::cout << "\nUsage: " << programName << " <pdb_file> <voxel_size> <output_file> [padding] [inflate_factor] [format]\n\n";
     std::cout << "Arguments:\n";
     std::cout << "  pdb_file     : Path to input PDB file\n";
     std::cout << "  voxel_size   : Edge length of voxels in Angstroms (e.g., 1.0)\n";
-    std::cout << "  output_file  : Output GiD mesh file path (e.g., empty_mesh.msh)\n";
+    std::cout << "  output_file  : Output mesh file path (e.g., empty_mesh.msh or empty_mesh.stl)\n";
     std::cout << "  padding      : Optional padding around bounding box in Angstroms (default: 2.0)\n";
-    std::cout << "  inflate_factor : Optional radius scale factor (default: 1.0)\n\n";
+    std::cout << "  inflate_factor : Optional radius scale factor (default: 1.0)\n";
+    std::cout << "  format       : Optional export format gid|stl (default: gid)\n\n";
     std::cout << "Example:\n";
-    std::cout << "  " << programName << " protein.pdb 1.0 empty_mesh.msh 2.0 1.0\n\n";
+    std::cout << "  " << programName << " protein.pdb 1.0 empty_mesh.stl 2.0 1.0 stl\n\n";
     std::cout << "Note: Empty voxel meshes can be very large (typically 95-99% of total voxels).\n";
     std::cout << "      Use larger voxel sizes for initial testing.\n\n";
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "BioMesh - Empty Voxel Mesh Generator with GiD Export\n";
+    std::cout << "BioMesh - Empty Voxel Mesh Generator with Mesh Export\n";
     std::cout << "======================================================\n\n";
     
     // Check arguments
@@ -39,6 +40,7 @@ int main(int argc, char* argv[]) {
     std::string outputFile = argv[3];
     double padding = 2.0; // Default padding
     double inflateFactor = 1.0; // Default atom radius scale
+    std::string outputFormat = "gid"; // Default format
     
     // Parse voxel size
     try {
@@ -78,6 +80,11 @@ int main(int argc, char* argv[]) {
             std::cerr << "Error: Invalid inflate factor value: " << argv[5] << "\n";
             return 1;
         }
+    }
+    
+    // Parse optional output format
+    if (argc > 6) {
+        outputFormat = argv[6];
     }
     
     try {
@@ -127,14 +134,14 @@ int main(int argc, char* argv[]) {
                       << " elements). File may be large.\n\n";
         }
         
-        // Step 5: Export to GiD format
-        std::cout << "Exporting to GiD format: " << outputFile << "\n";
-        bool success = GiDExporter::exportToGiD(mesh, outputFile);
+        // Step 5: Export to selected format
+        std::cout << "Exporting to format [" << outputFormat << "]: " << outputFile << "\n";
+        bool success = MeshExporter::exportMesh(mesh, outputFile, outputFormat);
         
         if (success) {
             std::cout << "  Export successful!\n";
             std::cout << "\nMesh file written to: " << outputFile << "\n";
-            std::cout << "You can now open this file in GiD or any compatible FEM/CFD software.\n";
+            std::cout << "You can now open this file in tools compatible with the selected output format.\n";
             return 0;
         } else {
             std::cerr << "  Export failed!\n";
