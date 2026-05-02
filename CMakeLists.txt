@@ -63,6 +63,12 @@ target_link_libraries(filter_workflow_example biomesh_lib)
 # Enable testing
 enable_testing()
 
+# Minimal no-deps smoke test target (always available, including constrained CI)
+add_executable(biomesh_smoke_test tests/smoke_no_deps.cpp)
+target_link_libraries(biomesh_smoke_test biomesh_lib)
+target_compile_definitions(biomesh_smoke_test PRIVATE BIOMESH_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+add_test(NAME SmokeNoDeps COMMAND biomesh_smoke_test)
+
 # Find GoogleTest
 find_package(GTest QUIET)
 if(GTest_FOUND)

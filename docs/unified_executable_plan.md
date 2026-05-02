@@ -141,9 +141,9 @@ while centralizing shared logic into one maintainable pipeline.
 - Updated user-facing docs and examples.
 
 ### Acceptance Criteria
-- [ ] README no longer instructs new users to run two separate mesh executables.
-- [ ] At least one example each for occupied-only, empty-only, and both-mode is present.
-- [ ] Error/validation expectations are documented for common misuse cases.
+- [x] README no longer instructs new users to run two separate mesh executables.
+- [x] At least one example each for occupied-only, empty-only, and both-mode is present.
+- [x] Error/validation expectations are documented for common misuse cases.
 
 ---
 
@@ -185,3 +185,7 @@ while centralizing shared logic into one maintainable pipeline.
 - Dual export is deterministic with explicit output controls.
 - Legacy executable transition is complete and documented.
 - Build and tests are green, with parity evidence captured.
+
+
+### Ticket 7 addendum for constrained CI
+- Add a minimal, no-dependency `SmokeNoDeps` CTest target so core mesh generation is validated even when GoogleTest is unavailable.

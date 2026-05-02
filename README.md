@@ -43,8 +43,8 @@ cmake ..
 make -j4
 
 # Verify
-./occupied_voxel_to_gid
-./empty_voxel_to_gid
+./biomesh --help
+ctest --output-on-failure
 ```
 
 ### Basic Usage
@@ -53,12 +53,16 @@ make -j4
 # Return to project root
 cd ..
 
-# Generate both occupied and empty meshes
-./biomesh. sh protein.pdb
+# Generate occupied mesh only
+./build/biomesh protein.pdb 1.0 --mesh occupied --output occupied_mesh.msh
 
-# Output:
-#   mesh_occupied.msh  (molecule mesh)
-#   mesh_empty.msh     (fluid domain mesh)
+# Generate empty mesh only
+./build/biomesh protein.pdb 1.0 --mesh empty --output empty_mesh.msh
+
+# Generate both meshes in one preprocessing pass
+./build/biomesh protein.pdb 1.0 --mesh both \
+  --occupied-output mesh_occupied.msh \
+  --empty-output mesh_empty.msh
 ```
 
 ### High-Resolution Example
@@ -74,6 +78,37 @@ wget https://files.rcsb.org/download/1CRN.pdb
 #   crambin_highres_occupied.msh
 #   crambin_highres_empty.msh
 ```
+
+---
+
+## Unified CLI Migration (Ticket 7)
+
+`biomesh` is now the canonical executable for occupied, empty, and combined workflows.
+
+### Legacy command replacements
+
+```bash
+# Legacy occupied
+./occupied_voxel_to_gid protein.pdb 1.0 occupied.msh 2.0 1.0 gid
+# Unified equivalent
+./biomesh protein.pdb 1.0 --mesh occupied --output occupied.msh --padding 2.0 --inflate-factor 1.0 --format gid
+
+# Legacy empty
+./empty_voxel_to_gid protein.pdb 1.0 empty.stl 2.0 1.0 stl
+# Unified equivalent
+./biomesh protein.pdb 1.0 --mesh empty --output empty.stl --padding 2.0 --inflate-factor 1.0 --format stl
+```
+
+### Output argument rules
+
+- `--mesh occupied|empty` requires `--output` and rejects `--occupied-output/--empty-output`.
+- `--mesh both` requires both `--occupied-output` and `--empty-output`, and rejects `--output`.
+- In `both` mode, occupied and empty output paths must be different.
+
+### Minimal CI test coverage
+
+- `SmokeNoDeps` is a no-dependency CTest target that validates parser + voxelization + occupied/empty meshing in constrained environments.
+- Full regression coverage remains under `biomesh_tests` when GoogleTest is available.
 
 ---
 
