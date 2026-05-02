@@ -6,6 +6,7 @@
 #include "biomesh/VoxelGrid.hpp"
 
 #include <exception>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -120,7 +121,9 @@ CliOptions parseArgs(int argc, char* argv[]) {
         if (options.occupiedOutput.empty() || options.emptyOutput.empty()) {
             throw std::runtime_error("Error: --occupied-output and --empty-output are required when --mesh is both");
         }
-        if (options.occupiedOutput == options.emptyOutput) {
+        const auto occupiedResolved = std::filesystem::weakly_canonical(std::filesystem::path(options.occupiedOutput)).lexically_normal();
+        const auto emptyResolved = std::filesystem::weakly_canonical(std::filesystem::path(options.emptyOutput)).lexically_normal();
+        if (occupiedResolved == emptyResolved) {
             throw std::runtime_error("Error: Occupied and empty output paths must be different");
         }
     } else {
@@ -142,6 +145,39 @@ const char* modeName(MeshMode mode) {
         case MeshMode::Both: return "both";
     }
     return "unknown";
+}
+
+void exportAndReport(const HexMesh& mesh,
+                     int voxelCount,
+                     const CliOptions& options,
+                     const std::string& outputPath,
+                     const std::string& meshLabel) {
+    std::cout << "  Generated " << meshLabel << " mesh:\n";
+    std::cout << "    Nodes: " << mesh.getNodeCount() << "\n";
+    std::cout << "    Elements: " << mesh.getElementCount() << "\n";
+
+    int theoreticalNodes = voxelCount * 8;
+    double efficiency = 0.0;
+    if (theoreticalNodes > 0) {
+        efficiency = (1.0 - static_cast<double>(mesh.getNodeCount()) / theoreticalNodes) * 100.0;
+    }
+    std::cout << "    Node sharing efficiency: " << std::fixed << std::setprecision(1)
+              << efficiency << "%\n\n";
+
+    if (mesh.getElementCount() > 100000) {
+        std::cout << "WARNING: Large mesh detected (" << mesh.getElementCount()
+                  << " elements). File may be large.\n\n";
+    }
+
+    std::cout << "Exporting " << meshLabel << " mesh to format [" << options.outputFormat
+              << "]: " << outputPath << "\n";
+    bool success = MeshExporter::exportMesh(mesh, outputPath, options.outputFormat);
+    if (!success) {
+        throw std::runtime_error("Error: Failed to export " + meshLabel + " mesh to: " + outputPath);
+    }
+
+    std::cout << "  Export successful!\n";
+    std::cout << "\n" << meshLabel << " mesh file written to: " << outputPath << "\n";
 }
 
 }  // namespace
@@ -175,72 +211,29 @@ int main(int argc, char* argv[]) {
         if (options.meshMode == MeshMode::Occupied) {
             std::cout << "\nGenerating hexahedral mesh from occupied voxels...\n";
             HexMesh mesh = VoxelMeshGenerator::generateHexMesh(voxelGrid);
-
-            std::cout << "  Generated mesh:\n";
-            std::cout << "    Nodes: " << mesh.getNodeCount() << "\n";
-            std::cout << "    Elements: " << mesh.getElementCount() << "\n";
-
-            int occupiedVoxelCount = voxelGrid.getOccupiedVoxelCount();
-            int theoreticalNodes = occupiedVoxelCount * 8;
-            double efficiency = 0.0;
-            if (theoreticalNodes > 0) {
-                efficiency = (1.0 - static_cast<double>(mesh.getNodeCount()) / theoreticalNodes) * 100.0;
-            }
-            std::cout << "    Node sharing efficiency: " << std::fixed << std::setprecision(1)
-                      << efficiency << "%\n\n";
-
-            if (mesh.getElementCount() > 100000) {
-                std::cout << "WARNING: Large mesh detected (" << mesh.getElementCount()
-                          << " elements). File may be large.\n\n";
-            }
-
-            std::cout << "Exporting to format [" << options.outputFormat << "]: " << options.output << "\n";
-            bool success = MeshExporter::exportMesh(mesh, options.output, options.outputFormat);
-            if (!success) {
-                std::cerr << "  Export failed!\n";
-                return 1;
-            }
-
-            std::cout << "  Export successful!\n";
-            std::cout << "\nMesh file written to: " << options.output << "\n";
+            exportAndReport(mesh, voxelGrid.getOccupiedVoxelCount(), options, options.output, "occupied");
             return 0;
         }
 
         if (options.meshMode == MeshMode::Empty) {
             std::cout << "\nGenerating hexahedral mesh from empty voxels...\n";
             HexMesh mesh = EmptyVoxelMeshGenerator::generateHexMesh(voxelGrid);
-
-            std::cout << "  Generated mesh:\n";
-            std::cout << "    Nodes: " << mesh.getNodeCount() << "\n";
-            std::cout << "    Elements: " << mesh.getElementCount() << "\n";
-
-            int emptyVoxelCount = voxelGrid.getEmptyVoxelCount();
-            int theoreticalNodes = emptyVoxelCount * 8;
-            double efficiency = 0.0;
-            if (theoreticalNodes > 0) {
-                efficiency = (1.0 - static_cast<double>(mesh.getNodeCount()) / theoreticalNodes) * 100.0;
-            }
-            std::cout << "    Node sharing efficiency: " << std::fixed << std::setprecision(1)
-                      << efficiency << "%\n\n";
-
-            if (mesh.getElementCount() > 100000) {
-                std::cout << "WARNING: Large mesh detected (" << mesh.getElementCount()
-                          << " elements). File may be large.\n\n";
-            }
-
-            std::cout << "Exporting to format [" << options.outputFormat << "]: " << options.output << "\n";
-            bool success = MeshExporter::exportMesh(mesh, options.output, options.outputFormat);
-            if (!success) {
-                std::cerr << "  Export failed!\n";
-                return 1;
-            }
-
-            std::cout << "  Export successful!\n";
-            std::cout << "\nMesh file written to: " << options.output << "\n";
+            exportAndReport(mesh, voxelGrid.getEmptyVoxelCount(), options, options.output, "empty");
             return 0;
         }
 
-        throw std::runtime_error("Error: mesh mode not implemented yet in this ticket: " + std::string(modeName(options.meshMode)));
+        if (options.meshMode == MeshMode::Both) {
+            std::cout << "\nGenerating hexahedral mesh from occupied voxels...\n";
+            HexMesh occupiedMesh = VoxelMeshGenerator::generateHexMesh(voxelGrid);
+            exportAndReport(occupiedMesh, voxelGrid.getOccupiedVoxelCount(), options, options.occupiedOutput, "occupied");
+
+            std::cout << "\nGenerating hexahedral mesh from empty voxels...\n";
+            HexMesh emptyMesh = EmptyVoxelMeshGenerator::generateHexMesh(voxelGrid);
+            exportAndReport(emptyMesh, voxelGrid.getEmptyVoxelCount(), options, options.emptyOutput, "empty");
+            return 0;
+        }
+
+        throw std::runtime_error("Error: Invalid internal mesh mode state");
     } catch (const std::exception& e) {
         std::cerr << e.what() << "\n\n";
         printUsage(argv[0]);
