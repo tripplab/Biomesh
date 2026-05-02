@@ -91,6 +91,33 @@ cmake --build . -j
 
 Re-check CMake output for `OpenMP found - parallel mesh generation enabled`.
 
+#### Runtime thread count (OpenMP)
+
+Yes — OpenMP-enabled builds may still run with one thread unless the runtime decides otherwise.
+Set the thread count explicitly before running `biomesh`:
+
+```bash
+# use all visible cores
+export OMP_NUM_THREADS=$(nproc)      # Linux
+# export OMP_NUM_THREADS=$(sysctl -n hw.ncpu)   # macOS
+
+# or set a fixed count
+export OMP_NUM_THREADS=8
+
+./biomesh ../data/test_peptide.pdb 1.0 --mesh occupied --output occupied.msh
+```
+
+Useful diagnostics:
+
+```bash
+# bind OpenMP threads and print runtime settings
+export OMP_PROC_BIND=true
+export OMP_PLACES=cores
+export OMP_DISPLAY_ENV=VERBOSE
+```
+
+Note: in BioMesh, OpenMP currently parallelizes voxel corner-node generation loops; other stages remain serial, so speedup may be limited for small inputs.
+
 ##### Linux/macOS troubleshooting (micromamba)
 
 If CMake still cannot detect OpenMP in micromamba, point CMake to the active environment and explicitly choose compilers from that environment:
