@@ -34,8 +34,8 @@ A modern C++ toolkit for generating hexahedral finite element meshes from molecu
 
 ```bash
 # Clone repository
-git clone https://github.com/pausalinas/BioMesh.git
-cd BioMesh
+git clone https://github.com/tripplab/Biomesh.git
+cd Biomesh
 
 # Build
 mkdir build && cd build
