@@ -41,9 +41,8 @@ The repository currently provides a unified executable (`biomesh`), compatibilit
 ```bash
 git clone https://github.com/pausalinas/BioMesh.git
 cd BioMesh
-mkdir -p build && cd build
-cmake ..
-cmake --build . -j
+git checkout work
+bash -lc 'mkdir -p build && cd build && cmake .. && cmake --build . -j'
 ```
 
 ### Run unified executable
@@ -157,15 +156,16 @@ BioMesh/
 │   ├── ticket8_validation.md
 │   └── unified_executable_plan.md
 ├── examples/
-│   ├── biomesh.cpp
 │   ├── empty_voxel_to_gid_wrapper.cpp
 │   ├── occupied_voxel_to_gid_wrapper.cpp
-│   ├── main.cpp
 │   ├── voxel_demo.cpp
 │   ├── filter_demo.cpp
 │   └── filter_workflow_example.cpp
 ├── include/biomesh/
 ├── src/
+│   ├── biomesh.cpp
+│   ├── main.cpp
+│   └── ...
 └── tests/
 ```
 
