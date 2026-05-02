@@ -44,17 +44,13 @@ target_link_libraries(biomesh_example biomesh_lib)
 add_executable(voxel_demo examples/voxel_demo.cpp)
 target_link_libraries(voxel_demo biomesh_lib)
 
-# Create executable for empty voxel to GiD export
-add_executable(empty_voxel_to_gid examples/empty_voxel_to_gid.cpp)
-target_link_libraries(empty_voxel_to_gid biomesh_lib)
-
-# Create executable for occupied voxel to GiD export
-add_executable(occupied_voxel_to_gid examples/occupied_voxel_to_gid.cpp)
-target_link_libraries(occupied_voxel_to_gid biomesh_lib)
-
-# Create unified biomesh executable (shared preprocessing skeleton)
+# Create unified biomesh executable
 add_executable(biomesh examples/biomesh.cpp)
 target_link_libraries(biomesh biomesh_lib)
+
+# Legacy compatibility wrappers (deprecated): forward to biomesh
+add_executable(empty_voxel_to_gid examples/empty_voxel_to_gid_wrapper.cpp)
+add_executable(occupied_voxel_to_gid examples/occupied_voxel_to_gid_wrapper.cpp)
 
 # Create executable for filter demonstration
 add_executable(filter_demo examples/filter_demo.cpp)

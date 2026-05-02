@@ -162,3 +162,14 @@ biomesh protein.pdb 1.0 \
   --format gid
 ```
 
+
+
+---
+
+## 6) Ticket 6 migration decision (implemented)
+
+Migration path selected: **keep legacy executable names temporarily as compatibility wrappers**.
+
+- `biomesh` is the canonical unified executable target in CMake.
+- `occupied_voxel_to_gid` and `empty_voxel_to_gid` remain available as deprecated wrappers that forward legacy positional arguments to `biomesh` with `--mesh occupied` / `--mesh empty`.
+- This preserves existing scripts while centralizing runtime behavior in the unified pipeline.
