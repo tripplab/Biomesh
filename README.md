@@ -45,6 +45,80 @@ git branch
 bash -lc 'mkdir -p build && cd build && cmake .. && cmake --build . -j'
 ```
 
+### Build with OpenMP multithreading
+
+OpenMP is enabled automatically when CMake can find an OpenMP-capable compiler/runtime.
+
+```bash
+# from repo root
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j
+```
+
+During `cmake ..`, look for one of these status lines:
+
+- `OpenMP found - parallel mesh generation enabled`
+- `OpenMP not found - mesh generation will run serially`
+
+If OpenMP is not found, install/update your compiler toolchain and OpenMP runtime, then re-run CMake in a clean build directory.
+
+#### Installing OpenMP in a micromamba environment
+
+If you are building inside micromamba, install compiler + OpenMP runtime packages from `conda-forge` in your active environment:
+
+```bash
+# create/activate env (example)
+micromamba create -n biomesh -c conda-forge cmake ninja cxx-compiler
+micromamba activate biomesh
+
+# Linux: GNU OpenMP runtime
+micromamba install -n biomesh -c conda-forge libgomp
+
+# macOS (clang): LLVM OpenMP runtime
+micromamba install -n biomesh -c conda-forge llvm-openmp
+```
+
+Then configure/build from a fresh build directory:
+
+```bash
+rm -rf build
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j
+```
+
+Re-check CMake output for `OpenMP found - parallel mesh generation enabled`.
+
+##### Linux/macOS troubleshooting (micromamba)
+
+If CMake still cannot detect OpenMP in micromamba, point CMake to the active environment and explicitly choose compilers from that environment:
+
+```bash
+# make sure env is active first
+micromamba activate biomesh
+
+# Linux/macOS: use env prefix + env compilers
+cmake .. \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_PREFIX_PATH="$CONDA_PREFIX" \
+  -DCMAKE_C_COMPILER="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-cc" \
+  -DCMAKE_CXX_COMPILER="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-c++"
+```
+
+On macOS with clang-based toolchains, this variant is often sufficient:
+
+```bash
+cmake .. \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_PREFIX_PATH="$CONDA_PREFIX" \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++
+```
+
+Tip: if compiler paths differ in your environment, inspect `$CONDA_PREFIX/bin` and substitute the exact compiler executable names.
+
 ### Run unified executable
 
 ```bash
