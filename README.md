@@ -39,9 +39,9 @@ The repository currently provides a unified executable (`biomesh`), compatibilit
 ### Build
 
 ```bash
-git clone https://github.com/pausalinas/BioMesh.git
+git clone -b dev01 --single-branch --depth 1 https://github.com/pausalinas/BioMesh.git
 cd BioMesh
-git checkout work
+git branch
 bash -lc 'mkdir -p build && cd build && cmake .. && cmake --build . -j'
 ```
 
