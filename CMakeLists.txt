@@ -28,6 +28,7 @@ include_directories(include)
 
 # Create library for the core functionality
 file(GLOB_RECURSE SOURCES "src/*.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/biomesh.cpp")
 add_library(biomesh_lib ${SOURCES})
 target_include_directories(biomesh_lib PUBLIC include)
 
@@ -37,7 +38,7 @@ if(OpenMP_CXX_FOUND)
 endif()
 
 # Create executable for example usage
-add_executable(biomesh_example examples/main.cpp)
+add_executable(biomesh_example src/main.cpp)
 target_link_libraries(biomesh_example biomesh_lib)
 
 # Create executable for voxel demonstration
@@ -45,7 +46,7 @@ add_executable(voxel_demo examples/voxel_demo.cpp)
 target_link_libraries(voxel_demo biomesh_lib)
 
 # Create unified biomesh executable
-add_executable(biomesh examples/biomesh.cpp)
+add_executable(biomesh src/biomesh.cpp)
 target_link_libraries(biomesh biomesh_lib)
 
 # Legacy compatibility wrappers (deprecated): forward to biomesh
