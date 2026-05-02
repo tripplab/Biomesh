@@ -52,6 +52,10 @@ target_link_libraries(empty_voxel_to_gid biomesh_lib)
 add_executable(occupied_voxel_to_gid examples/occupied_voxel_to_gid.cpp)
 target_link_libraries(occupied_voxel_to_gid biomesh_lib)
 
+# Create unified biomesh executable (shared preprocessing skeleton)
+add_executable(biomesh examples/biomesh.cpp)
+target_link_libraries(biomesh biomesh_lib)
+
 # Create executable for filter demonstration
 add_executable(filter_demo examples/filter_demo.cpp)
 target_link_libraries(filter_demo biomesh_lib)
