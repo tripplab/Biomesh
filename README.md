@@ -1,541 +1,243 @@
-# BioMesh - Molecular Mesh Generator
+# BioMesh
 
-[![License:  MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C++17](https://img.shields.io/badge/C++-17-blue.svg)](https://isocpp.org/)
-[![CMake](https://img.shields.io/badge/CMake-3.14+-064F8C. svg)](https://cmake.org/)
+[![CMake](https://img.shields.io/badge/CMake-3.14+-064F8C.svg)](https://cmake.org/)
 
-A modern C++ toolkit for generating hexahedral finite element meshes from molecular structures in PDB format. BioMesh provides both **occupied voxel meshes** (molecule) and **empty voxel meshes** (void space) for CFD, FEM, and molecular dynamics applications
+BioMesh is a C++17 toolkit for generating **hexahedral voxel meshes** from molecular structures in PDB format. It supports:
+
+- **Occupied meshes** (voxels intersecting molecule volume)
+- **Empty meshes** (void/fluid-domain voxels around the molecule)
+- Export to **GiD (`.msh`)** and **STL (`.stl`)**
+
+The repository currently provides a unified executable (`biomesh`), compatibility wrappers for legacy commands, a Bash workflow runner (`biomesh.sh`), and tests.
 
 ---
 
 ## Features
 
-### Core Capabilities
-- **PDB Parsing** - Read and extract atom coordinates from Protein Data Bank files
-- **Atomic Enrichment** - Automatically assign van der Waals radii and atomic masses
-- **Bounding Box Calculation** - Compute 3D molecular bounding boxes with padding
-- **Uniform Voxelization** - Tessellate space into regular cubic voxels
-- **Dual Mesh Generation** - Create meshes from both occupied and empty voxels
-- **Mesh Export (GiD/STL)** - Export volumetric meshes to GiD (.msh) or boundary surface meshes to STL (.stl)
-- **Molecule Filtering** - Filter by protein, nucleic acids, water, ions, etc.
+### Core pipeline
+- Parse ATOM/HETATM records from PDB input.
+- Enrich atoms with atomic radii/masses.
+- Build padded 3D voxel grid.
+- Generate occupied and/or empty hexahedral meshes.
+- Export meshes to GiD or STL.
 
-### Advanced Features
-- **OpenMP Parallelization** - Multi-threaded mesh generation for large structures
-- **Command-Line Tool** - Easy-to-use bash script with config file support
-- **High Precision** - Configurable voxel resolution from 3. 0 Å to 0.01 Å
-- **Comprehensive Testing** - 60+ unit tests covering all functionality
-- **Modern C++17** - RAII, smart pointers, STL containers
+### Developer-focused capabilities
+- Unified CLI with strict argument validation for occupied/empty/both workflows.
+- Legacy compatibility wrappers:
+  - `occupied_voxel_to_gid`
+  - `empty_voxel_to_gid`
+- Optional OpenMP acceleration when detected by CMake.
+- Smoke test target with no external test dependency requirements.
+- Extended test suite via GoogleTest (if available).
 
 ---
 
 ## Quick Start
 
-### Installation
+### Build
 
 ```bash
-# Clone repository
 git clone https://github.com/pausalinas/BioMesh.git
 cd BioMesh
+mkdir -p build && cd build
+cmake ..
+cmake --build . -j
+```
 
-# Build
-mkdir build && cd build
-cmake .. 
-make -j4
+### Run unified executable
 
-# Verify
-./biomesh --help
+```bash
+# occupied only
+./biomesh ../data/test_peptide.pdb 1.0 --mesh occupied --output occupied.msh
+
+# empty only
+./biomesh ../data/test_peptide.pdb 1.0 --mesh empty --output empty.msh
+
+# both in one run
+./biomesh ../data/test_peptide.pdb 1.0 --mesh both \
+  --occupied-output occ.msh \
+  --empty-output emp.msh
+```
+
+### Run tests
+
+```bash
 ctest --output-on-failure
 ```
 
-### Basic Usage
-
-```bash
-# Return to project root
-cd ..
-
-# Generate occupied mesh only
-./build/biomesh protein.pdb 1.0 --mesh occupied --output occupied_mesh.msh
-
-# Generate empty mesh only
-./build/biomesh protein.pdb 1.0 --mesh empty --output empty_mesh.msh
-
-# Generate both meshes in one preprocessing pass
-./build/biomesh protein.pdb 1.0 --mesh both \
-  --occupied-output mesh_occupied.msh \
-  --empty-output mesh_empty.msh
-```
-
-### High-Resolution Example
-
-```bash
-# Download a real protein
-wget https://files.rcsb.org/download/1CRN.pdb
-
-# Generate high-resolution meshes
-./biomesh.sh 1CRN.pdb -v 0.5 -o crambin_highres --verbose
-
-# Outputs:
-#   crambin_highres_occupied.msh
-#   crambin_highres_empty.msh
-```
-
 ---
 
-## Unified CLI Migration (Ticket 7)
+## Unified CLI (`biomesh`)
 
-`biomesh` is now the canonical executable for occupied, empty, and combined workflows.
-
-### Legacy command replacements
+### Usage
 
 ```bash
-# Legacy occupied
-./occupied_voxel_to_gid protein.pdb 1.0 occupied.msh 2.0 1.0 gid
-# Unified equivalent
-./biomesh protein.pdb 1.0 --mesh occupied --output occupied.msh --padding 2.0 --inflate-factor 1.0 --format gid
-
-# Legacy empty
-./empty_voxel_to_gid protein.pdb 1.0 empty.stl 2.0 1.0 stl
-# Unified equivalent
-./biomesh protein.pdb 1.0 --mesh empty --output empty.stl --padding 2.0 --inflate-factor 1.0 --format stl
+./biomesh <pdb_file> <voxel_size> [options]
 ```
+
+### Options
+
+- `--mesh <occupied|empty|both>` (default: `occupied`)
+- `--padding <number>` (default: `2.0`)
+- `--inflate-factor <number>` (default: `1.0`)
+- `--format <gid|stl>` (default: `gid`)
+- `--output <file>` (required for `occupied` or `empty`)
+- `--occupied-output <file>` (required for `both`)
+- `--empty-output <file>` (required for `both`)
 
 ### Output argument rules
 
-- `--mesh occupied|empty` requires `--output` and rejects `--occupied-output/--empty-output`.
-- `--mesh both` requires both `--occupied-output` and `--empty-output`, and rejects `--output`.
+- `--mesh occupied|empty` requires `--output`.
+- `--mesh both` requires `--occupied-output` and `--empty-output`.
+- `--mesh both` rejects `--output`.
 - In `both` mode, occupied and empty output paths must be different.
-
-### Minimal CI test coverage
-
-- `SmokeNoDeps` is a no-dependency CTest target that validates parser + voxelization + occupied/empty meshing in constrained environments.
-- Full regression coverage remains under `biomesh_tests` when GoogleTest is available.
 
 ---
 
-## Documentation
+## Bash Runner (`biomesh.sh`)
 
-- **[Getting Started Guide](docs/getting_started.md)** - Tutorial for new users
-- **[API Reference](docs/api_reference.md)** - Complete C++ API documentation
-- **[Configuration Guide](docs/configuration.md)** - Config file reference
-- **[Examples](docs/examples.md)** - Practical use cases and workflows
-- **[Voxelization Details](docs/VoxelizationMeshGeneration.md)** - Technical documentation
-- **[Empty Mesh Generation](docs/EmptyVoxelMeshGeneration.md)** - CFD-specific guide
+`biomesh.sh` orchestrates dual-mesh workflows, optional config loading, and batch processing while invoking build outputs.
+
+### Usage
+
+```bash
+./biomesh.sh [options] <input.pdb>
+```
+
+### Frequently used options
+
+- `-i, --input FILE`
+- `-o, --output BASENAME`
+- `-v, --voxel-size VALUE`
+- `--inflate-factor VALUE`
+- `-p, --padding VALUE`
+- `-f, --format gid|stl`
+- `--filter TYPE` (`none|all|protein-only|no-water|custom`)
+- `--occupied true|false`
+- `--empty true|false`
+- `-c, --config FILE`
+- `--generate-config`
+- `--batch LIST`
+- `-V, --verbose`
+
+### Examples
+
+```bash
+# Generate both meshes
+./biomesh.sh data/test_peptide.pdb -o peptide
+
+# Generate occupied mesh only
+./biomesh.sh data/test_peptide.pdb --empty false
+
+# Batch
+./biomesh.sh --batch data/test_peptide.pdb,data/mixed_molecules.pdb -v 1.0
+```
 
 ---
 
 ## Project Structure
 
-```
-biomesh/
-├── include/biomesh/              # Public headers
-│   ├── Atom.hpp                  # Atom class with physical properties
-│   ├── AtomicSpec.hpp            # Atomic database (radii, masses)
-│   ├── PDBParser.hpp             # PDB file parser
-│   ├── AtomBuilder.hpp           # Atom enrichment
-│   ├── BoundingBox.hpp           # 3D bounding box calculator
-│   ├── VoxelGrid.hpp             # Voxel grid data structure
-│   ├── VoxelMeshGenerator.hpp    # Occupied voxel → mesh
-│   ├── EmptyVoxelMeshGenerator.hpp # Empty voxel → mesh
-│   ├── GiDExporter.hpp           # GiD format exporter
-│   ├── MoleculeFilter.hpp        # Molecule type filtering
-│   ├── ResidueClassifier.hpp     # Residue classification
-│   └── BioMesh.hpp               # Main convenience header
-├── src/                          # Implementation files
-├── examples/                     # Example programs
-│   ├── occupied_voxel_to_gid.cpp # Occupied mesh generator
-│   ├── empty_voxel_to_gid.cpp    # Empty mesh generator
-│   ├── main.cpp                  # Basic demo
-│   ├── voxel_demo.cpp            # Voxelization demo
-│   ├── filter_demo.cpp           # Filtering demo
+```text
+BioMesh/
+├── CMakeLists.txt
+├── README.md
+├── biomesh.sh
+├── config/
+│   └── default.conf
+├── data/
+│   ├── mixed_molecules.pdb
+│   └── test_peptide.pdb
+├── docs/
+│   ├── EmptyVoxelMeshGeneration.md
+│   ├── MoleculeFilter.md
+│   ├── VoxelizationMeshGeneration.md
+│   ├── biomesh_cli_contract.md
+│   ├── ticket8_validation.md
+│   └── unified_executable_plan.md
+├── examples/
+│   ├── biomesh.cpp
+│   ├── empty_voxel_to_gid_wrapper.cpp
+│   ├── occupied_voxel_to_gid_wrapper.cpp
+│   ├── main.cpp
+│   ├── voxel_demo.cpp
+│   ├── filter_demo.cpp
 │   └── filter_workflow_example.cpp
-├── tests/                        # Unit tests (60+ tests)
-├── data/                         # Sample PDB files
-├── docs/                         # Documentation
-├── config/                       # Configuration files
-├── biomesh.sh                   # Command-line tool
-└── CMakeLists.txt                # Build configuration
+├── include/biomesh/
+├── src/
+└── tests/
 ```
 
 ---
 
-## Use Cases
+## Build and Test Matrix
 
-### Computational Fluid Dynamics (CFD)
-Generate fluid domain meshes around proteins for flow analysis: 
-```bash
-./biomesh.sh protein.pdb --occupied false -v 0.5 -p 10. 0 -o fluid_domain
-```
+### Requirements
+- CMake 3.14+
+- C++17 compiler (GCC/Clang/MSVC)
+- Optional: OpenMP
+- Optional: GoogleTest
 
-### Finite Element Analysis (FEM)
-Create molecular meshes for structural analysis:
-```bash
-./biomesh.sh protein.pdb --empty false -v 1.0 -o structural_mesh
-```
+### CMake targets
+- `biomesh_lib` (core library)
+- `biomesh` (unified CLI executable)
+- `biomesh_example`, `voxel_demo`, `filter_demo`, `filter_workflow_example`
+- `occupied_voxel_to_gid`, `empty_voxel_to_gid` (legacy wrappers)
+- `biomesh_smoke_test`
+- `biomesh_tests` (only when GoogleTest is found)
 
-### Multi-Physics Simulations
-Generate both molecule and surrounding medium: 
-```bash
-./biomesh.sh protein.pdb -v 0.5 -o simulation
-# Outputs both occupied and empty meshes
-```
-
-### Convergence Studies
-Multi-resolution mesh generation: 
-```bash
-for voxel in 2. 0 1.0 0.5 0.25; do
-    ./biomesh.sh protein.pdb -v $voxel -o mesh_${voxel}
-done
-```
+### Test behavior
+- `SmokeNoDeps` is always added.
+- `AllTests` is added only if GoogleTest is available.
 
 ---
 
-## Command-Line Tool
-
-### Basic Syntax
-
-```bash
-./biomesh.sh [OPTIONS] <input. pdb>
-```
-
-### Key Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-v, --voxel-size VALUE` | Voxel edge length (Å) | 1.0 |
-| `-p, --padding VALUE` | Bounding box padding (Å) | 2.0 |
-| `-o, --output BASENAME` | Output file basename | mesh |
-| `-f, --format FORMAT` | Output format (`gid` or `stl`) | gid |
-| `--occupied BOOL` | Generate occupied mesh | true |
-| `--empty BOOL` | Generate empty mesh | true |
-| `--filter TYPE` | Molecule filter | none |
-| `-c, --config FILE` | Use configuration file | - |
-| `--batch LIST` | Process multiple files | - |
-| `-V, --verbose` | Verbose output | false |
-
-### Configuration File
-
-```bash
-# Generate template
-./biomesh.sh --generate-config > my_config.conf
-
-# Edit configuration
-nano my_config.conf
-
-# Run with config
-./biomesh.sh --config my_config.conf
-```
-
-**Example config:**
-```ini
-[input]
-file = protein.pdb
-
-[voxelization]
-voxel_size = 0.5
-padding = 2.0
-
-[output]
-basename = high_res_mesh
-format = gid
-generate_occupied = true
-generate_empty = true
-
-[options]
-verbose = true
-```
-
----
-
-## C++ API
-
-### Complete Workflow
+## C++ API Snapshot
 
 ```cpp
-#include "biomesh/BioMesh.hpp"
+#include "biomesh/PDBParser.hpp"
+#include "biomesh/AtomBuilder.hpp"
 #include "biomesh/VoxelGrid.hpp"
 #include "biomesh/VoxelMeshGenerator.hpp"
 #include "biomesh/EmptyVoxelMeshGenerator.hpp"
-#include "biomesh/GiDExporter.hpp"
+#include "biomesh/MeshExporter.hpp"
 
-using namespace biomesh;
+auto basicAtoms = biomesh::PDBParser::parsePDBFile("protein.pdb");
+biomesh::AtomBuilder builder(1.0);
+auto atoms = builder.buildAtoms(basicAtoms);
 
-int main() {
-    // Parse PDB
-    auto basicAtoms = PDBParser::parsePDBFile("protein.pdb");
-    
-    // Enrich with physical properties
-    AtomBuilder builder;
-    auto enrichedAtoms = builder.buildAtoms(basicAtoms);
-    
-    // Create voxel grid
-    VoxelGrid voxelGrid(enrichedAtoms, 1.0, 2.0); // 1.0 Å voxels, 2.0 Å padding
-    
-    // Generate occupied mesh (molecule)
-    HexMesh occupiedMesh = VoxelMeshGenerator::generateHexMesh(voxelGrid);
-    
-    // Generate empty mesh (void space)
-    HexMesh emptyMesh = EmptyVoxelMeshGenerator:: generateHexMesh(voxelGrid);
-    
-    // Export to GiD format
-    GiDExporter:: exportToGiD(occupiedMesh, "occupied. msh");
-    GiDExporter::exportToGiD(emptyMesh, "empty.msh");
-    
-    std::cout << "Occupied:  " << occupiedMesh.getElementCount() << " elements\n";
-    std::cout << "Empty: " << emptyMesh. getElementCount() << " elements\n";
-    
-    return 0;
-}
-```
+biomesh::VoxelGrid grid(atoms, 1.0, 2.0);
+auto occupied = biomesh::VoxelMeshGenerator::generateHexMesh(grid);
+auto empty = biomesh::EmptyVoxelMeshGenerator::generateHexMesh(grid);
 
-### Molecule Filtering
-
-```cpp
-#include "biomesh/MoleculeFilter.hpp"
-
-// Filter to protein only
-auto filter = MoleculeFilter::proteinOnly();
-auto proteinAtoms = filter.filter(atoms);
-
-// Custom filter
-MoleculeFilter customFilter;
-customFilter.setKeepProteins(true)
-            .setKeepWater(false)
-            .setKeepIons(false);
-auto filtered = customFilter.filter(atoms);
+biomesh::MeshExporter::exportMesh(occupied, "occupied.msh", "gid");
+biomesh::MeshExporter::exportMesh(empty, "empty.stl", "stl");
 ```
 
 ---
 
-## Resolution Guidelines
+## Documentation
 
-| Voxel Size | Resolution | Elements (typical) | Use Case |
-|------------|-----------|-------------------|----------|
-| 3.0 Å | Very Low | 1K - 10K | Quick preview |
-| 2.0 Å | Low | 10K - 50K | Draft visualization |
-| 1.0 Å | Medium | 50K - 200K | Standard work |
-| 0.5 Å | High | 200K - 1M | Production quality |
-| 0.25 Å | Very High | 1M - 10M | Detailed analysis |
-| 0.1 Å | Ultra High | 10M+ | Research/HPC |
-
-**Performance Tip:** Start with 2.0 Å for testing, then refine to 0.5-1.0 Å for production. 
-
----
-
-## Build Options
-
-### Prerequisites
-
-- **C++17 compiler** (GCC 7+, Clang 5+, MSVC 2017+)
-- **CMake 3.14+**
-- **GoogleTest** (optional, for tests)
-- **OpenMP** (optional, for parallelization)
-
-### Build Configuration
-
-```bash
-# Standard build
-cmake .. 
-make -j4
-
-# Release build (optimized)
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
-
-# With OpenMP parallelization
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -fopenmp" .. 
-make -j4
-
-# Run tests
-make test
-```
-
-### OpenMP Parallelization
-
-```bash
-# Set thread count
-export OMP_NUM_THREADS=16
-
-# Run with parallelization
-./occupied_voxel_to_gid protein.pdb 0.5 mesh. msh 2. 0
-```
-
----
-
-## Testing
-
-Comprehensive test suite with 60+ tests: 
-
-```bash
-cd build
-./biomesh_tests
-
-# Or via CMake
-make test
-```
-
-**Test Coverage:**
-- Atom construction and properties
-- Atomic database operations
-- PDB parsing (ATOM and HETATM records)
-- Bounding box calculations
-- Voxel grid generation
-- Mesh generation (occupied & empty)
-- Molecule filtering
-- GiD export format
-
----
-
-## Output Formats
-
-### GiD Mesh Format (. msh)
-
-Industry-standard format for FEM/CFD software:
-
-```
-MESH dimension 3 ElemType Hexahedra Nnode 8
-
-Coordinates
-1 x1 y1 z1
-2 x2 y2 z2
-... 
-End Coordinates
-
-Elements
-1 n1 n2 n3 n4 n5 n6 n7 n8
-2 n1 n2 n3 n4 n5 n6 n7 n8
-... 
-End Elements
-```
-
-**Compatible Software:**
-- GiD (pre/post-processing)
-- ANSYS
-- Abaqus
-- CalculiX
-- Custom FEM/CFD codes
-
----
-
-##  Examples
-
-### Example 1: Water Molecule
-```bash
-cat > water. pdb <<EOF
-ATOM      1  O   HOH A   1       0.000   0.000   0.000  1.00  0.00           O
-ATOM      2  H1  HOH A   1       0.957   0.000   0.000  1.00  0.00           H
-ATOM      3  H2  HOH A   1      -0.240   0.927   0.000  1.00  0.00           H
-END
-EOF
-
-./biomesh.sh water. pdb -v 0.3 -p 1.0 -o water_mesh
-```
-
-### Example 2: Batch Processing
-```bash
-wget https://files.rcsb.org/download/1CRN.pdb
-wget https://files.rcsb.org/download/1MSO.pdb
-wget https://files.rcsb.org/download/2LYZ.pdb
-
-./biomesh.sh --batch 1CRN.pdb,1MSO.pdb,2LYZ.pdb -v 1.0
-```
-
-### Example 3: CFD Preparation
-```bash
-./biomesh.sh protein.pdb \
-  --occupied false \
-  -v 0.5 \
-  -p 15.0 \
-  -o cfd_domain \
-  --verbose
-```
-
----
-
-## Supported Elements
-
-Built-in atomic database with van der Waals radii and masses:
-
-| Element | Radius (Å) | Mass (Da) | Category |
-|---------|-----------|-----------|----------|
-| H | 1.20 | 1.008 | Main |
-| C | 1.70 | 12.011 | Main |
-| N | 1.55 | 14.007 | Main |
-| O | 1.52 | 15.999 | Main |
-| P | 1.80 | 30.974 | Main |
-| S | 1.80 | 32.065 | Main |
-| F, Cl, Br, I | varies | varies | Halogens |
-| Na, Mg, K, Ca | varies | varies | Metals |
-| Fe, Zn, Se | varies | varies | Trace elements |
-
-Additional elements can be easily added to the database.
+- `docs/biomesh_cli_contract.md`
+- `docs/unified_executable_plan.md`
+- `docs/ticket8_validation.md`
+- `docs/VoxelizationMeshGeneration.md`
+- `docs/EmptyVoxelMeshGeneration.md`
+- `docs/MoleculeFilter.md`
+- `IMPLEMENTATION_SUMMARY.md`
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-**Development Guidelines:**
-- Follow C++17 best practices
-- Add unit tests for new features
-- Update documentation
-- Ensure all tests pass
+1. Create a feature branch.
+2. Make changes + tests.
+3. Run local validation (`ctest --output-on-failure`).
+4. Open a pull request.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Acknowledgments
-
-- Protein Data Bank (PDB) for molecular structure format
-- GiD development team for mesh format specification
-- OpenMP for parallelization support
-- GoogleTest for testing framework
-
----
-
-##  Support
-
-- **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/pausalinas/BioMesh/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/pausalinas/BioMesh/discussions)
-
----
-
-## Roadmap
-
-- [x] STL export format (`--format stl`)
-- [ ] Python bindings (pybind11)
-- [ ] Adaptive mesh refinement
-- [ ] Surface mesh extraction
-- [ ] Tetrahedral mesh generation
-- [ ] ParaView plugin
-
----
-
-## Citation
-
-If you use BioMesh in your research, please cite:
-
-```bibtex
-@software{biomesh,
-  author = {Salinas, Paulina},
-  title = {BioMesh: Molecular Hexahedral Mesh Generator},
-  year = {2026},
-  url = {https://github.com/pausalinas/BioMesh}
-}
-```
-
----
-
-**Made with ᡣ𐭩 for the computational biology and CFD communities**
+MIT License. See `LICENSE`.
