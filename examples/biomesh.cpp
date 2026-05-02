@@ -1,8 +1,11 @@
+#include "biomesh/VoxelMeshGenerator.hpp"
+#include "biomesh/MeshExporter.hpp"
 #include "biomesh/PDBParser.hpp"
 #include "biomesh/AtomBuilder.hpp"
 #include "biomesh/VoxelGrid.hpp"
 
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -168,9 +171,41 @@ int main(int argc, char* argv[]) {
         VoxelGrid voxelGrid(enrichedAtoms, options.voxelSize, options.padding);
         voxelGrid.printStatistics();
 
-        std::cout << "\nPreprocessing completed successfully.\n";
-        std::cout << "Mesh generation/export is not yet wired in this ticket.\n";
-        return 0;
+        if (options.meshMode == MeshMode::Occupied) {
+            std::cout << "\nGenerating hexahedral mesh from occupied voxels...\n";
+            HexMesh mesh = VoxelMeshGenerator::generateHexMesh(voxelGrid);
+
+            std::cout << "  Generated mesh:\n";
+            std::cout << "    Nodes: " << mesh.getNodeCount() << "\n";
+            std::cout << "    Elements: " << mesh.getElementCount() << "\n";
+
+            int occupiedVoxelCount = voxelGrid.getOccupiedVoxelCount();
+            int theoreticalNodes = occupiedVoxelCount * 8;
+            double efficiency = 0.0;
+            if (theoreticalNodes > 0) {
+                efficiency = (1.0 - static_cast<double>(mesh.getNodeCount()) / theoreticalNodes) * 100.0;
+            }
+            std::cout << "    Node sharing efficiency: " << std::fixed << std::setprecision(1)
+                      << efficiency << "%\n\n";
+
+            if (mesh.getElementCount() > 100000) {
+                std::cout << "WARNING: Large mesh detected (" << mesh.getElementCount()
+                          << " elements). File may be large.\n\n";
+            }
+
+            std::cout << "Exporting to format [" << options.outputFormat << "]: " << options.output << "\n";
+            bool success = MeshExporter::exportMesh(mesh, options.output, options.outputFormat);
+            if (!success) {
+                std::cerr << "  Export failed!\n";
+                return 1;
+            }
+
+            std::cout << "  Export successful!\n";
+            std::cout << "\nMesh file written to: " << options.output << "\n";
+            return 0;
+        }
+
+        throw std::runtime_error("Error: mesh mode not implemented yet in this ticket: " + std::string(modeName(options.meshMode)));
     } catch (const std::exception& e) {
         std::cerr << e.what() << "\n\n";
         printUsage(argv[0]);
